@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CANVAS | Code-Switching Reveals Language Anchoring in Multilingual LLMs</title>
+  <meta name="description" content="Project page for CANVAS: Contextual Anchor-based Neural Vector Alignment Steering for code-switched multilingual LLMs.">
+  <style>
+    :root {
+      --ink: #17211c;
+      --muted: #62706a;
+      --bg: #fbfaf6;
+      --wash: #f1efe7;
+      --card: #ffffff;
+      --line: #ded9cc;
+      --deep: #18352c;
+      --deep-2: #25483e;
+      --src: #2d6a4f;
+      --tgt: #7a4eab;
+      --good: #1b7f5a;
+      --bad: #b23a48;
+      --gold: #c99d45;
+      --shadow: 0 22px 60px rgba(23, 33, 28, 0.10);
+      --radius: 8px;
+      --max: 1120px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.58;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+    .wrap { width: min(var(--max), calc(100% - 40px)); margin: 0 auto; }
+
+    .hero {
+      background:
+        linear-gradient(180deg, rgba(14, 34, 28, 0.92), rgba(19, 53, 43, 0.94)),
+        radial-gradient(circle at 18% 10%, rgba(201, 157, 69, 0.22), transparent 32%);
+      color: #f8f5e8;
+      padding: 28px 0 54px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 56px;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border: 1px solid rgba(248, 245, 232, 0.55);
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 20px;
+      color: var(--gold);
+    }
+
+    .links { display: flex; gap: 18px; flex-wrap: wrap; color: rgba(248, 245, 232, 0.78); }
+    .links a:hover { color: #fff; }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(330px, 0.95fr);
+      gap: 42px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(248, 245, 232, 0.24);
+      border-radius: 999px;
+      padding: 7px 11px;
+      color: rgba(248, 245, 232, 0.84);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    h1 {
+      margin: 22px 0 18px;
+      max-width: 850px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 500;
+      line-height: 0.98;
+      letter-spacing: 0;
+      font-size: clamp(46px, 7.5vw, 86px);
+    }
+
+    .subtitle {
+      margin: 0;
+      max-width: 690px;
+      color: rgba(248, 245, 232, 0.82);
+      font-size: 18px;
+    }
+
+    .authors {
+      margin-top: 22px;
+      color: rgba(248, 245, 232, 0.75);
+      font-size: 14px;
+    }
+
+    .authors b { color: #fff7dd; font-weight: 700; }
+
+    .cta-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 0 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 800;
+      border: 1px solid rgba(248, 245, 232, 0.28);
+      color: #f9f4dd;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .btn.primary {
+      background: #f4d27a;
+      color: #1d2c25;
+      border-color: #f4d27a;
+    }
+
+    .btn.ghost { opacity: 0.72; cursor: default; }
+
+    .hero-card {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(248, 245, 232, 0.16);
+      border-radius: var(--radius);
+      padding: 14px;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+    }
+
+    .hero-card img {
+      border-radius: 6px;
+      background: #fff;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .stat {
+      border: 1px solid rgba(248, 245, 232, 0.16);
+      border-radius: 8px;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    .stat b {
+      display: block;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 28px;
+      line-height: 1;
+      color: #f5d17b;
+      font-weight: 600;
+    }
+
+    .stat span {
+      display: block;
+      margin-top: 7px;
+      color: rgba(248, 245, 232, 0.73);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    section { padding: 64px 0; }
+    section.alt { background: var(--wash); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: 0.42fr 1fr;
+      gap: 34px;
+      align-items: start;
+      margin-bottom: 28px;
+    }
+
+    .kicker {
+      color: var(--src);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    h2 {
+      margin: 5px 0 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(32px, 4vw, 48px);
+      line-height: 1.05;
+      font-weight: 500;
+    }
+
+    .lead { margin: 0; color: #35423c; font-size: 17px; }
+    .muted { color: var(--muted); }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel.pad { padding: 22px; }
+    .panel figure { margin: 0; }
+    .panel figcaption {
+      padding: 12px 14px 14px;
+      color: var(--muted);
+      font-size: 13px;
+      border-top: 1px solid var(--line);
+      background: #fffefa;
+    }
+
+    .formula {
+      margin: 18px 0;
+      padding: 14px;
+      border: 1px solid #d9d4c6;
+      border-radius: 8px;
+      background: #fbfaf5;
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .step {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      background: #fff;
+    }
+
+    .step .num {
+      display: inline-grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--deep);
+      color: #fff8dd;
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .step h3, .mini h3 {
+      margin: 0 0 8px;
+      font-size: 15px;
+      line-height: 1.25;
+    }
+
+    .step p, .mini p { margin: 0; color: var(--muted); font-size: 13px; }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .mini {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 8px;
+      padding: 15px;
+    }
+
+    .table-wrap {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      overflow-x: auto;
+      box-shadow: var(--shadow);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 860px;
+      font-size: 13px;
+    }
+
+    th, td {
+      padding: 10px 11px;
+      border-bottom: 1px solid #ebe6d8;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    th:first-child, td:first-child { text-align: left; }
+    th {
+      color: #44514b;
+      background: #f8f6ef;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+    .gain { color: var(--good); font-weight: 800; }
+    .loss { color: var(--bad); font-weight: 800; }
+    .best { font-weight: 900; color: #102920; }
+    .note { color: var(--muted); font-size: 12px; margin-top: 10px; }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .gallery .wide { grid-column: 1 / -1; }
+
+    pre {
+      margin: 0;
+      padding: 18px;
+      overflow-x: auto;
+      border-radius: 8px;
+      background: #15231e;
+      color: #f7f2df;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    footer {
+      padding: 34px 0 46px;
+      color: #65726c;
+      font-size: 13px;
+      border-top: 1px solid var(--line);
+    }
+
+    @media (max-width: 920px) {
+      .hero-grid, .section-head, .two-col { grid-template-columns: 1fr; }
+      .stat-grid, .steps, .mini-grid, .gallery { grid-template-columns: 1fr 1fr; }
+      nav { align-items: flex-start; flex-direction: column; margin-bottom: 36px; }
+    }
+
+    @media (max-width: 620px) {
+      .wrap { width: min(100% - 28px, var(--max)); }
+      .hero { padding-bottom: 40px; }
+      .links { gap: 10px 14px; }
+      .stat-grid, .steps, .mini-grid, .gallery { grid-template-columns: 1fr; }
+      section { padding: 46px 0; }
+      h1 { font-size: 43px; }
+      table { min-width: 760px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <nav>
+        <a class="brand" href="#">
+          <span class="brand-mark">C</span>
+          <span>CANVAS</span>
+        </a>
+        <div class="links">
+          <a href="#overview">Overview</a>
+          <a href="#anchor">Anchor Bias</a>
+          <a href="#method">Method</a>
+          <a href="#results">Results</a>
+          <a href="#bibtex">BibTeX</a>
+        </div>
+      </nav>
+
+      <div class="hero-grid">
+        <div>
+          <span class="eyebrow">Code-switched multilingual LLMs</span>
+          <h1>Code-Switching Reveals Language Anchoring in Multilingual LLMs</h1>
+          <p class="subtitle">
+            We locate code-switched representations between matched source and target monolingual anchors, then use the discovered anchor signal to steer target-language hidden states with CANVAS.
+          </p>
+          <p class="authors">
+            <b>Jeonghyun Park</b> · <b>Seunghyun Yoon</b> · <b>Yonghyun Jun</b> · <b>Hwanhee Lee</b><br>
+            Chung-Ang University · Adobe Research
+          </p>
+          <div class="cta-row">
+            <a class="btn primary" href="https://github.com/jeonghyunpark2002/CANVAS">Code</a>
+            <a class="btn" href="#bibtex">Citation</a>
+            <span class="btn ghost">Paper coming soon</span>
+          </div>
+          <div class="stat-grid" aria-label="Key results">
+            <div class="stat"><b>+0.566</b><span>Frame-induced anchor-bias gap</span></div>
+            <div class="stat"><b>75.9%</b><span>Source-anchored layers under GF-SRC</span></div>
+            <div class="stat"><b>+0.82</b><span>Average F1 gain from CANVAS</span></div>
+            <div class="stat"><b>93.0%</b><span>Examples move source-ward</span></div>
+          </div>
+        </div>
+        <div class="hero-card">
+          <img src="static/images/motivation.png" alt="Schematic of source-framed and target-framed code-switched questions between source and target anchors.">
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="overview">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="kicker">Overview</div>
+            <h2>Why inspect code-switched representations?</h2>
+          </div>
+          <p class="lead">
+            Multilingual LLMs can answer monolingual questions yet degrade when the same information need is expressed through structured code-switching. Answer scores alone do not explain whether the model preserves a source-language processing path, shifts toward a target-language path, or lands in an unstable intermediate region. We therefore compare each code-switched hidden state against matched source and target monolingual anchors.
+          </p>
+        </div>
+
+        <div class="two-col">
+          <div class="panel pad">
+            <h3>Controlled comparison</h3>
+            <p class="muted">
+              For each factual question, we compare source-only, target-only, source-framed CS, and target-framed CS variants. Grammar-forced CS keeps the information need fixed while changing the language that organizes the mixed utterance.
+            </p>
+          </div>
+          <div class="panel pad">
+            <h3>Actionable signal</h3>
+            <p class="muted">
+              Anchor Bias measures which monolingual side the CS representation approaches. CANVAS uses the same internal signal at inference time, without rewriting the input or updating model weights.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="anchor" class="alt">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="kicker">Anchor Bias</div>
+            <h2>Code-switched inputs follow the grammatical frame.</h2>
+          </div>
+          <div>
+            <p class="lead">
+              Anchor Bias compares the similarity of a CS question representation to its matched source and target references. Positive values indicate source-oriented representations; negative values indicate target-oriented representations.
+            </p>
+            <div class="formula">AB_l(q_cs) = cos(r_l(q_src), r_l(q_cs)) - cos(r_l(q_tgt), r_l(q_cs))</div>
+          </div>
+        </div>
+
+        <div class="mini-grid">
+          <div class="mini">
+            <h3>GF-SRC</h3>
+            <p>Mean upper-layer anchor bias is <b>+0.246</b>, indicating a source-oriented internal state.</p>
+          </div>
+          <div class="mini">
+            <h3>GF-TGT</h3>
+            <p>Mean upper-layer anchor bias is <b>-0.320</b>, indicating a target-ward representation shift.</p>
+          </div>
+          <div class="mini">
+            <h3>QA behavior</h3>
+            <p>More source-oriented anchor bias corresponds to smaller QA degradation across model-condition pairs.</p>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top:18px">
+          <figure>
+            <img src="static/images/v1_layer_anchor_per_model_raw.png" alt="Layer-wise anchor bias across models for grammar-forced source and target conditions.">
+            <figcaption>Layer-wise anchor trajectories. The grammar-frame contrast becomes clearer in upper layers, motivating an upper-layer intervention window.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section id="method">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="kicker">Method</div>
+            <h2>CANVAS aligns target-token states toward an in-context source canvas.</h2>
+          </div>
+          <p class="lead">
+            CANVAS is an inference-time hidden-state intervention. It computes source and target anchors from the same CS input, estimates whether the mixed state is target-oriented, and softly interpolates only target-language token states toward the source canvas during prefill.
+          </p>
+        </div>
+
+        <div class="steps">
+          <div class="step">
+            <span class="num">1</span>
+            <h3>Token partition</h3>
+            <p>Split the user question span into source, target, and neutral tokens.</p>
+          </div>
+          <div class="step">
+            <span class="num">2</span>
+            <h3>Source canvas</h3>
+            <p>Mean-pool source-token states in upper layers to form a layer-specific canvas.</p>
+          </div>
+          <div class="step">
+            <span class="num">3</span>
+            <h3>Adaptive strength</h3>
+            <p>Use the internal alignment score to increase steering for target-oriented inputs.</p>
+          </div>
+          <div class="step">
+            <span class="num">4</span>
+            <h3>Online interpolation</h3>
+            <p>Modify target-token hidden states during prefill, then decode from the adjusted cache.</p>
+          </div>
+        </div>
+
+        <div class="formula" style="margin-top:22px">h_tilde(l,t) = (1 - alpha) h(l,t) + alpha c_src(l), for t in target tokens and l in control layers</div>
+      </div>
+    </section>
+
+    <section id="results" class="alt">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="kicker">Intervention Results</div>
+            <h2>CANVAS improves CS QA across model families.</h2>
+          </div>
+          <p class="lead">
+            We compare direct CS answering (Base), a random-direction control with the same intervention budget (Rand), and the full adaptive CANVAS method (Adapt). Condition-wise columns report Adapt minus Base F1.
+          </p>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th>Base</th>
+                <th>Rand</th>
+                <th>Adapt</th>
+                <th>GF-SRC</th>
+                <th>GF-TGT</th>
+                <th>Random</th>
+                <th>Selective</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Llama3.2-1B</td><td>2.57</td><td>2.68</td><td class="best">3.20**</td><td class="gain">+0.08</td><td class="gain">+0.82</td><td class="gain">+1.01</td><td class="gain">+0.62</td></tr>
+              <tr><td>Mistral-7B</td><td>4.53</td><td>4.96</td><td class="best">5.06**</td><td class="gain">+0.14</td><td class="gain">+0.80</td><td class="gain">+0.65</td><td class="gain">+0.55</td></tr>
+              <tr><td>Aya-Expanse-8B</td><td>5.99</td><td>5.99</td><td class="best">6.88**</td><td class="gain">+0.62</td><td class="gain">+1.41</td><td class="gain">+0.63</td><td class="gain">+0.91</td></tr>
+              <tr><td>Llama3.1-8B</td><td>6.21</td><td>6.72</td><td class="best">7.79**</td><td class="gain">+1.21</td><td class="gain">+0.64</td><td class="gain">+2.15</td><td class="gain">+2.34</td></tr>
+              <tr><td>Mixtral-8x7B</td><td>6.77</td><td>6.82</td><td class="best">6.91</td><td class="gain">+0.16</td><td class="gain">+0.29</td><td class="gain">+0.38</td><td class="loss">-0.29</td></tr>
+              <tr><td>Qwen3-30B-A3B</td><td>6.91</td><td>6.93</td><td class="best">8.11**</td><td class="gain">+0.06</td><td class="gain">+2.48</td><td class="gain">+0.71</td><td class="gain">+1.55</td></tr>
+              <tr><td>Qwen3.5-4B</td><td>7.58</td><td>7.35</td><td class="best">8.14**</td><td class="gain">+0.37</td><td class="gain">+0.70</td><td class="gain">+0.33</td><td class="gain">+0.86</td></tr>
+              <tr><td>Phi-3.5-MoE</td><td>7.99</td><td>7.93</td><td class="best">8.82**</td><td class="gain">+0.12</td><td class="gain">+1.31</td><td class="gain">+0.61</td><td class="gain">+1.26</td></tr>
+              <tr><td>Qwen3.5-9B</td><td>9.89</td><td>10.01</td><td class="best">10.24*</td><td class="loss">-0.20</td><td class="gain">+0.77</td><td class="gain">+0.22</td><td class="gain">+0.61</td></tr>
+              <tr><td>Llama3.1-70B</td><td>12.89</td><td>12.98</td><td class="best">13.20</td><td class="loss">-0.52</td><td class="gain">+0.67</td><td class="gain">+0.73</td><td class="gain">+0.35</td></tr>
+              <tr><td>Llama3.3-70B</td><td>12.96</td><td>13.27</td><td class="best">13.61*</td><td class="gain">+0.29</td><td class="gain">+1.66</td><td class="gain">+0.61</td><td class="gain">+0.04</td></tr>
+              <tr><td>Qwen3.5-27B</td><td>14.14</td><td>14.22</td><td class="best">15.40**</td><td class="gain">+0.28</td><td class="gain">+1.74</td><td class="gain">+0.96</td><td class="gain">+2.03</td></tr>
+              <tr><td>Qwen3.6-35B-A3B</td><td>15.80</td><td>16.07</td><td class="best">17.53**</td><td class="gain">+0.66</td><td class="gain">+3.58</td><td class="gain">+1.41</td><td class="gain">+1.28</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note">Stars denote model-level overall Adapt-Base paired tests with BH-FDR correction across model-level tests.</p>
+      </div>
+    </section>
+
+    <section id="diagnostics">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="kicker">Geometric Diagnostics</div>
+            <h2>The intervention moves representations in the intended direction.</h2>
+          </div>
+          <p class="lead">
+            CANVAS is not just a score-level intervention. Representation analyses show that the update usually projects positively along the source-target anchor axis and that the adaptive coefficient increases for more target-heavy inputs.
+          </p>
+        </div>
+
+        <div class="gallery">
+          <div class="panel wide">
+            <figure>
+              <img src="static/images/move_analysis.png" alt="Two-dimensional representation movement from Base to CANVAS along the source-target axis.">
+              <figcaption>Qwen3.5-27B representation movement. Arrows show centroid movement from Base to CANVAS along the SRC-TGT axis.</figcaption>
+            </figure>
+          </div>
+          <div class="panel">
+            <figure>
+              <img src="static/images/alpha_analysis.png" alt="Adaptive alpha selected by CANVAS as source-token ratio changes.">
+              <figcaption>Adaptive intervention strength increases when the input is more target-heavy.</figcaption>
+            </figure>
+          </div>
+          <div class="panel">
+            <figure>
+              <img src="static/images/rep_analysis_modelwise.png" alt="Model-wise source-ward projection ratio distributions.">
+              <figcaption>Model-wise projection ratios show that most updates move source-ward.</figcaption>
+            </figure>
+          </div>
+          <div class="panel wide">
+            <figure>
+              <img src="static/images/fig_canvas_case_study_repr.png" alt="Layer-wise case-study representation trajectory for CANVAS.">
+              <figcaption>Case-study trajectory: CANVAS changes layer-wise anchor bias while preserving the original prompt text.</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="extensions" class="alt">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="kicker">Task Extensions</div>
+            <h2>Beyond single-turn closed-book QA.</h2>
+          </div>
+          <p class="lead">
+            We also evaluate Llama-3.1-8B in retrieval-augmented and dialog settings. Retrieval tests whether gains remain when the model receives external evidence, reducing dependence on parametric recall alone.
+          </p>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Dataset</th>
+                <th>Task</th>
+                <th>Retrieval</th>
+                <th>Metric</th>
+                <th>Items</th>
+                <th>Base</th>
+                <th>CANVAS</th>
+                <th>Delta</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>CodeMixQA</td><td>Short-answer QA</td><td>K=0</td><td>Token F1</td><td>2880</td><td>5.81</td><td class="best">7.51</td><td class="gain">+1.70</td></tr>
+              <tr><td>CodeMixQA</td><td>Retrieval-augmented QA</td><td>K=1</td><td>Token F1</td><td>2880</td><td>19.71</td><td class="best">20.60</td><td class="gain">+0.89</td></tr>
+              <tr><td>PingPong</td><td>Multi-turn dialog QA</td><td>K=0</td><td>Accuracy</td><td>1683</td><td>47.89</td><td class="best">50.51</td><td class="gain">+2.61</td></tr>
+              <tr><td>PingPong</td><td>Retrieval-augmented dialog QA</td><td>K=1</td><td>Accuracy</td><td>1683</td><td>44.86</td><td class="best">46.64</td><td class="gain">+1.78</td></tr>
+              <tr><td>PingPong</td><td>Topic classification</td><td>--</td><td>Accuracy</td><td>396</td><td>49.75</td><td class="best">51.26</td><td class="gain">+1.52</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="bibtex">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="kicker">Citation</div>
+            <h2>BibTeX</h2>
+          </div>
+          <p class="lead">Citation metadata will be updated when the paper is public.</p>
+        </div>
+        <pre>@misc{park2026canvas,
+  title  = {Code-Switching Reveals Language Anchoring in Multilingual LLMs},
+  author = {Park, Jeonghyun and Yoon, Seunghyun and Jun, Yonghyun and Lee, Hwanhee},
+  year   = {2026},
+  note   = {Manuscript under review}
+}</pre>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      CANVAS project page. Code: <a href="https://github.com/jeonghyunpark2002/CANVAS">github.com/jeonghyunpark2002/CANVAS</a>.
+    </div>
+  </footer>
+</body>
+</html>
